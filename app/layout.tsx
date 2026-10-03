@@ -188,8 +188,16 @@ export default async function RootLayout({
               {/*
                 Only {children} is wrapped: the header and footer persist across
                 routes, and the shutter is fixed, so it covers them regardless.
+                The landmark lives here rather than in app/template.tsx: Next
+                emits the template's client chunk as a <script> without the CSP
+                nonce, so the strict CSP in proxy.ts blocks it and hydration
+                never completes (every motion element stays at opacity:0).
               */}
-              <PageTransition>{children}</PageTransition>
+              <PageTransition>
+                <main id="main" className="flex flex-1 flex-col">
+                  {children}
+                </main>
+              </PageTransition>
               <DeferredFooter title="Noirly Portfolio" profile={profile} />
             </MotionProvider>
           </ThemeProvider>
