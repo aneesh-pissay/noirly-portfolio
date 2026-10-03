@@ -21,6 +21,11 @@ function copyRecursive(src, dest) {
   }
 }
 
+if (!fs.existsSync('.next/standalone')) {
+  console.log('No standalone output; skipping static asset copy.');
+  process.exit(0);
+}
+
 console.log('Copying static assets to standalone build...');
 copyRecursive('.next/static', '.next/standalone/.next/static');
 copyRecursive('public', '.next/standalone/public');

@@ -19,7 +19,10 @@ const contentApiHost = (() => {
 const polyfillStub = "./lib/modern-polyfill.js";
 
 const nextConfig: NextConfig = {
-  output: "standalone",
+  // Vercel packages the build itself via its adapter; the standalone copy step
+  // there fails because Turbopack doesn't emit .next/next-server.js.nft.json.
+  // Keep standalone for self-hosting (`npm start`).
+  output: process.env.VERCEL ? undefined : "standalone",
   transpilePackages: ["@noirly-dev/ui"],
   experimental: {
     optimizePackageImports: ["lucide-react", "@mdi/js", "@mdi/react", "framer-motion"],
