@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" role="img" aria-label="Noirly Pulse mark">
+  <title>Noirly Pulse — monochrome</title>
+  <desc>A chat bubble carrying a heartbeat: conversations that are live.</desc>
+  <!-- Default tint for standalone use. Delete this rule to inherit color from the parent.
+       Plain currentColor shapes only (no masks/clipPaths) so theming code can recolor it safely. -->
+  <style>svg { color: #C9A44A; }</style>
+  <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+    <!-- The conversation -->
+    <path stroke-width="56"
+          d="M316 200 H708 A140 140 0 0 1 848 340 V572 A140 140 0 0 1 708 712 H452 L292 836 L304 712
+             A140 140 0 0 1 176 572 V340 A140 140 0 0 1 316 200 Z"/>
+    <!-- The heartbeat: presence, in realtime -->
+    <path stroke-width="52" d="M272 462 H404 L452 352 L524 592 L584 412 L616 462 H752"/>
+  </g>
+</svg>

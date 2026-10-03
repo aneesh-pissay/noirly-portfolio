@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" role="img" aria-label="Noirly Ledger mark">
+  <title>Noirly Ledger — monochrome</title>
+  <desc>A bound ledger with entries and a bold total line.</desc>
+  <!-- Default tint for standalone use. Delete this rule to inherit color from the parent.
+       Plain currentColor shapes only (no masks/clipPaths) so theming code can recolor it safely. -->
+  <style>svg { color: #C9A44A; }</style>
+  <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+    <!-- The book -->
+    <rect x="232" y="168" width="560" height="688" rx="80" stroke-width="52"/>
+    <!-- Spine -->
+    <path stroke-width="52" d="M352 168 V856"/>
+    <!-- Entries -->
+    <path stroke-width="40" d="M444 336 H700 M444 448 H700 M444 560 H640"/>
+    <!-- The total -->
+    <path stroke-width="64" d="M540 688 H700"/>
+  </g>
+</svg>
