@@ -3,12 +3,18 @@
 
 /* The design system: tokens, type scale, primitives, ambient background. */
 @import "@noirly-dev/ui/styles.css";
-/* Lenis owns the document scroller; this sizes it correctly. */
-@import "lenis/dist/lenis.css";
+/* `@noirly-dev/ui/effects.css` (pointer spotlight) is loaded after first
+   paint by <DeferredStyles>, so it stays out of the render-blocking CSS chunk. */
 
-/* `@noirly-dev/ui/effects.css` (cursor, tilt, pointer spotlight) and
-   `/transitions.css` (route shutter) are loaded after first paint by
-   <DeferredStyles>, so they stay out of the render-blocking CSS chunk. */
+/* Native scrolling: the wheel responds immediately, and in-page links glide
+   to their section. Clearing the sticky header is `section[id]
+   { scroll-margin-top }` in @noirly-dev/ui — adding scroll-padding here as
+   well would double the offset. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
 
 /* ==========================================================================
    Portfolio-specific marketing layers.
@@ -90,8 +96,10 @@
   fill: var(--accent) !important;
 }
 
+/* Stroke only — never clear the fill here. Solid marks (Identity, Split) carry
+   a stroke purely to round their corners; line marks already arrive with an
+   explicit fill="none" from the theming step. */
 .project-logo-mark-inner svg path[stroke]:not([stroke="none"]) {
-  fill: none !important;
   stroke: var(--accent) !important;
 }
 

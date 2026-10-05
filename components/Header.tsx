@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   AnimatePresence,
   motion,
@@ -12,7 +12,7 @@ import {
 import { Sun, Moon, Menu, X, ArrowUpRight } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { ThemePicker } from "@/components/ThemePicker";
-import { ScrollProgress, Magnetic, DURATION, EASE_OUT, EASE_IN_OUT, SPRING, stagger } from "@noirly-dev/ui/motion";
+import { ScrollProgress, DURATION, EASE_OUT, EASE_IN_OUT, SPRING, stagger } from "@noirly-dev/ui/motion";
 import { useInstantEntrance } from "@noirly-dev/ui";
 import type { Profile } from "@/data/profile";
 
@@ -91,27 +91,88 @@ export function Header({ title, navLinks, profile }: HeaderProps) {
     });
   }, []);
 
+  // Set when a nav link is clicked: holds that section lit while the smooth
+  // scroll passes over the ones in between.
+  const pendingSection = useRef<string | null>(null);
+
   useEffect(() => {
     if (pathname !== "/") return;
-    const intersecting = new Set<string>();
-    const observers = SECTION_IDS.map((id) => {
-      const el = document.getElementById(id);
-      if (!el) return null;
-      const obs = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) intersecting.add(id);
-          else intersecting.delete(id);
-          setActiveSection(SECTION_IDS.find((s) => intersecting.has(s)) ?? "home");
-        },
-        { rootMargin: "-22% 0px -45% 0px" },
-      );
-      obs.observe(el);
-      return obs;
-    });
-    return () => observers.forEach((o) => o?.disconnect());
+    let frame = 0;
+    let releaseTimer = 0;
+
+    // The active section is the last one whose top has crossed a line 35% down
+    // the viewport. Sections are looked up on every pass because the ones below
+    // the fold arrive in a dynamic chunk, after this effect first runs.
+    function update() {
+      frame = 0;
+      if (pendingSection.current) return;
+      const line = window.innerHeight * 0.35;
+      const present = SECTION_IDS.filter((id) => document.getElementById(id));
+      const atBottom =
+        window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
+      let active = "home";
+      if (atBottom && present.length) {
+        active = present[present.length - 1]!;
+      } else {
+        for (const id of present) {
+          if (document.getElementById(id)!.getBoundingClientRect().top <= line) active = id;
+        }
+      }
+      setActiveSection(active);
+    }
+
+    function schedule() {
+      if (!frame) frame = requestAnimationFrame(update);
+    }
+
+    function release() {
+      window.clearTimeout(releaseTimer);
+      pendingSection.current = null;
+      schedule();
+    }
+
+    // A click locks the target in; the lock lifts when the scroll settles.
+    function onScroll() {
+      if (pendingSection.current) {
+        window.clearTimeout(releaseTimer);
+        releaseTimer = window.setTimeout(release, 150);
+      }
+      schedule();
+    }
+
+    schedule();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", schedule);
+    const mo = new MutationObserver(schedule);
+    mo.observe(document.body, { childList: true, subtree: true });
+
+    return () => {
+      cancelAnimationFrame(frame);
+      window.clearTimeout(releaseTimer);
+      pendingSection.current = null;
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", schedule);
+      mo.disconnect();
+    };
   }, [pathname]);
 
+  const selectSection = useCallback(
+    (href: string) => {
+      const section = hrefToSection(href);
+      if (pathname !== "/" || !section) return;
+      pendingSection.current = section;
+      setActiveSection(section);
+      // If the click causes no scroll (already there), nothing lifts the lock.
+      window.setTimeout(() => {
+        if (pendingSection.current === section) pendingSection.current = null;
+      }, 1500);
+    },
+    [pathname],
+  );
+
   function isActive(href: string): boolean {
+    // Off the home page, "Work" stays lit across /work and every case study.
+    if (pathname.startsWith("/work")) return hrefToSection(href) === "work";
     if (pathname !== "/") return pathname === href;
     return hrefToSection(href) === activeSection;
   }
@@ -144,7 +205,10 @@ export function Header({ title, navLinks, profile }: HeaderProps) {
             href="/#home"
             aria-label={`${brandName} home`}
             className="group flex min-w-0 shrink-0 items-center gap-2.5 text-[var(--text)]"
-            onClick={() => setMenuOpen(false)}
+            onClick={() => {
+              setMenuOpen(false);
+              selectSection("/#home");
+            }}
           >
             {/* Logo-only on small screens — brand name is visually hidden until sm. */}
             <span className="inline-flex size-[4.25rem] shrink-0 sm:hidden" aria-hidden>
@@ -161,7 +225,7 @@ export function Header({ title, navLinks, profile }: HeaderProps) {
           </Link>
 
           {/* Desktop nav — one shared-layout pill slides to the active section. */}
-          <nav className="hidden lg:block" data-cursor="link">
+          <nav className="hidden lg:block">
             <ul className="flex items-center gap-1 rounded-full border border-[var(--hairline)] bg-[color-mix(in_srgb,var(--text)_4%,transparent)] p-1">
               {navLinks.map((link) => {
                 const active = isActive(link.href);
@@ -169,6 +233,7 @@ export function Header({ title, navLinks, profile }: HeaderProps) {
                   <li key={link.href} className="relative">
                     <Link
                       href={link.href}
+                      onClick={() => selectSection(link.href)}
                       aria-current={active ? "page" : undefined}
                       className="relative block rounded-full px-3.5 py-2 font-mono text-xs font-semibold tracking-[0.14em] uppercase transition-colors duration-200"
                       style={{ color: active ? "var(--bg)" : "var(--text-muted)" }}
@@ -211,12 +276,14 @@ export function Header({ title, navLinks, profile }: HeaderProps) {
               </AnimatePresence>
             </motion.button>
 
-            <Magnetic className="hidden lg:inline-flex">
-              <Link href="/#contact" className="btn btn-solid" data-cursor="link">
+            {/* Wrapper carries the breakpoint: `.btn` is unlayered CSS, so it
+                would override a `hidden` utility placed on the link itself. */}
+            <span className="hidden lg:inline-flex">
+              <Link href="/#contact" className="btn btn-solid" onClick={() => selectSection("/#contact")}>
                 Get in touch
                 <ArrowUpRight size={14} aria-hidden />
               </Link>
-            </Magnetic>
+            </span>
 
             <motion.button
               type="button"
@@ -282,7 +349,10 @@ export function Header({ title, navLinks, profile }: HeaderProps) {
                   <motion.div key={link.href} variants={menuItem}>
                     <Link
                       href={link.href}
-                      onClick={() => setMenuOpen(false)}
+                      onClick={() => {
+                        setMenuOpen(false);
+                        selectSection(link.href);
+                      }}
                       aria-current={isActive(link.href) ? "page" : undefined}
                       className="flex items-baseline gap-4 border-b border-[var(--hairline)] py-4"
                     >

@@ -4,16 +4,13 @@ import { useRef } from "react";
 import {
   motion,
   useMotionValue,
-  useMotionValueEvent,
   useReducedMotion,
   useScroll,
   useSpring,
-  useTransform,
-  type MotionValue,
   type Variants,
 } from "framer-motion";
 import { SectionHeading } from "@/components/sections/SectionHeading";
-import { Reveal, StaggerGroup, TextReveal, Counter, SpotlightCard, fadeUp, VIEWPORT, DURATION, EASE_OUT } from "@noirly-dev/ui/motion";
+import { Reveal, StaggerGroup, Counter, SpotlightCard, fadeUp, VIEWPORT, DURATION, EASE_OUT } from "@noirly-dev/ui/motion";
 import { profile as defaultProfile } from "@/data/profile";
 import { workExperience as defaultExperience } from "@/data/experience";
 import type { Profile } from "@/data/profile";
@@ -22,38 +19,26 @@ import type { WorkExperience } from "@/data/experience";
 /**
  * Career timeline.
  *
- * Two layers of motion, doing different jobs.
- *
- * The entrance choreographs the card *assembling* — it lands, its node lights,
- * the role is uncovered, the rule draws, the meta settles, the achievements
- * count in. That runs once, in about 1.3s.
- *
- * Underneath it, everything else is bound to scroll position rather than to a
- * timeline, so the section keeps responding for as long as the reader is in
- * it: the rail fills and carries a lit head down its length, each node ignites
- * as the head reaches it, and every achievement brightens from 38% as it
- * crosses the reading line — the list literally lights up as it is read. That
- * is the part a one-shot reveal cannot do, and the reason the section felt
- * static once it had finished arriving.
+ * Each card arrives in one quick beat (about half a second) and every line is
+ * fully readable as soon as it lands — no word-by-word reveal, no dimmed copy
+ * waiting for the reader to scroll. The only scroll-linked motion is the rail
+ * on the left, which fills as the reader moves through the roles.
  */
 
-/** Seconds after an entry enters the fold, per part of the entrance. */
+/** Seconds after an entry enters the fold, per part of the entrance. Kept
+ *  short so the whole card has settled before the reader starts on it. */
 const BEAT = {
-  role: 0.16,
-  underline: 0.28,
-  rule: 0.22,
-  company: 0.32,
-  period: 0.38,
-  tenure: 0.46,
-  status: 0.54,
-  achievements: 0.4,
+  underline: 0.12,
+  rule: 0.1,
+  company: 0.06,
+  period: 0.1,
+  tenure: 0.14,
+  status: 0.18,
+  achievements: 0.12,
 } as const;
 
 /** Distance between two entries' sequences, so a list reads top-to-bottom. */
-const ENTRY_OFFSET = 0.08;
-
-/** Unread copy sits here. Low enough to read as "not yet", high enough to read. */
-const UNREAD_OPACITY = 0.38;
+const ENTRY_OFFSET = 0.05;
 
 /** The row itself only sequences; its two halves carry the visible motion. */
 const achievementRow: Variants = {
@@ -95,57 +80,21 @@ function readTenure(period: string): Tenure | null {
   return { years: Math.max(0, end - start), current };
 }
 
-/**
- * Scroll progress that only ever increases.
- *
- * Without the latch, scrolling back up dims copy the reader has already passed,
- * which reads as a glitch rather than as an effect. Read stays read.
- */
-function useLatched(progress: MotionValue<number>): MotionValue<number> {
-  const latched = useMotionValue(0);
-  useMotionValueEvent(progress, "change", (value) => {
-    if (value > latched.get()) latched.set(value);
-  });
-  return latched;
-}
-
 /* -------------------------------- Achievement ------------------------------- */
 
 interface AchievementProps {
   item: string;
   index: number;
   last: boolean;
-  reduced: boolean;
 }
 
-function Achievement({ item, index, last, reduced }: AchievementProps) {
-  const ref = useRef<HTMLLIElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    // Starts brightening low on the screen and completes around the upper
-    // third — the band the eye actually reads from.
-    offset: ["start 92%", "start 58%"],
-  });
-  const read = useLatched(scrollYProgress);
-
-  const lit = useTransform(read, [0, 1], [UNREAD_OPACITY, 1]);
-  const rule = useTransform(read, [0, 1], [0.08, 1]);
-
-  // Scroll-bound values are styles, not transitions, so MotionConfig's
-  // reducedMotion never touches them. Pin them to "fully read" instead.
-  const settled = useMotionValue(1);
-  const opacity = reduced ? settled : lit;
-  const ruleScale = reduced ? settled : rule;
-
+function Achievement({ item, index, last }: AchievementProps) {
   const label = String(index + 1).padStart(2, "0");
 
   return (
-    // motion.li directly rather than <RevealItem>: this row needs its own ref
-    // for useScroll, and RevealItem does not forward one. Everything else is
-    // identical — it still inherits hidden/show from the StaggerGroup above.
-    <motion.li ref={ref} variants={achievementRow} className="group relative">
-      <motion.div
-        style={{ opacity }}
+    // Inherits hidden/show from the StaggerGroup above.
+    <motion.li variants={achievementRow} className="group relative">
+      <div
         className="flex gap-4 py-3.5 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-1"
       >
         <motion.span
@@ -158,13 +107,11 @@ function Achievement({ item, index, last, reduced }: AchievementProps) {
         <motion.p variants={achievementText} className="copy">
           {item}
         </motion.p>
-      </motion.div>
+      </div>
 
-      {/* Row rule, drawn by the same reading progress. */}
       {last ? null : (
-        <motion.span
+        <span
           aria-hidden
-          style={{ scaleX: ruleScale }}
           className="absolute inset-x-0 bottom-0 h-px origin-left bg-[var(--hairline)]"
         />
       )}
@@ -177,31 +124,24 @@ function Achievement({ item, index, last, reduced }: AchievementProps) {
 interface TimelineEntryProps {
   job: WorkExperience;
   index: number;
-  reduced: boolean;
 }
 
-function TimelineEntry({ job, index, reduced }: TimelineEntryProps) {
+function TimelineEntry({ job, index }: TimelineEntryProps) {
   const base = index * ENTRY_OFFSET;
   const tenure = readTenure(job.period);
 
   return (
     <motion.li
-      initial={{ opacity: 0, y: 32 }}
+      initial={{ opacity: 0, y: 16 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={VIEWPORT}
-      transition={{ duration: DURATION.grand, ease: EASE_OUT, delay: base }}
+      transition={{ duration: 0.45, ease: EASE_OUT, delay: base }}
       className="relative"
     >
       <SpotlightCard as="article" animateIn={false}>
         <div className="grid grid-cols-1 md:grid-cols-12">
           <div className="relative p-6 md:col-span-4 md:p-8">
-            <TextReveal
-              as="h3"
-              text={job.role}
-              gap={0.05}
-              delay={base + BEAT.role}
-              className="display-md"
-            />
+            <h3 className="display-md">{job.role}</h3>
 
             {/* Accent underline, drawn after the role has landed. */}
             <motion.span
@@ -308,7 +248,6 @@ function TimelineEntry({ job, index, reduced }: TimelineEntryProps) {
                 item={item}
                 index={j}
                 last={j === job.achievements.length - 1}
-                reduced={reduced}
               />
             ))}
           </StaggerGroup>
@@ -376,7 +315,6 @@ export function Experience({
               key={`${job.company}-${job.period}`}
               job={job}
               index={i}
-              reduced={reduced}
             />
           ))}
         </ol>

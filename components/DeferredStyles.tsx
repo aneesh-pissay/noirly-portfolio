@@ -3,18 +3,16 @@
 import { useEffect } from "react";
 
 /**
- * Loads the pointer-effect and route-shutter stylesheets after first paint, so
- * they stay out of the render-blocking CSS chunk linked from the document head.
+ * Loads the pointer-spotlight stylesheet after first paint, so it stays out of
+ * the render-blocking CSS chunk linked from the document head.
  *
- * Both are safe to arrive late: the cursor is gated on an attribute the hook
- * sets after mount, and the shutter is parked off-screen until the first
- * navigation.
+ * Safe to arrive late: the spotlight is purely decorative and is gated on an
+ * attribute the spotlight hook sets after mount.
  */
 export function DeferredStyles() {
   useEffect(() => {
     const load = () => {
       void import("@noirly-dev/ui/effects.css");
-      void import("@noirly-dev/ui/transitions.css");
     };
 
     if (typeof window.requestIdleCallback === "function") {

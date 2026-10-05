@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ArrowUp, ArrowUpRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { Logo } from "@/components/Logo";
-import { Reveal, StaggerGroup, RevealItem, Magnetic, fadeUp } from "@noirly-dev/ui/motion";
+import { Reveal, StaggerGroup, RevealItem, fadeUp } from "@noirly-dev/ui/motion";
 import type { Profile } from "@/data/profile";
 
 interface FooterProps {
@@ -50,7 +50,7 @@ export function Footer({ title, profile }: FooterProps) {
           </Reveal>
 
           <div className="md:col-span-3">
-            <p className="mono-label">On this page</p>
+            <p className="mono-label">Explore</p>
             <StaggerGroup gap={0.04} as="ul" className="mt-4 flex flex-col gap-2.5">
               {footerLinks.map((link) => (
                 <RevealItem key={link.href} as="li">
@@ -100,15 +100,13 @@ export function Footer({ title, profile }: FooterProps) {
             © {currentYear} {profile.name}
           </span>
 
-          <Magnetic>
-            <Link
-              href="/#home"
-              className="inline-flex items-center gap-2 rounded-full border border-[var(--hairline)] px-4 py-2 transition-colors hover:border-[var(--hairline-strong)] hover:text-[var(--text)]"
-            >
-              Back to top
-              <ArrowUp size={13} aria-hidden />
-            </Link>
-          </Magnetic>
+          <Link
+            href="/#home"
+            className="inline-flex items-center gap-2 rounded-full border border-[var(--hairline)] px-4 py-2 transition-colors hover:border-[var(--hairline-strong)] hover:text-[var(--text)]"
+          >
+            Back to top
+            <ArrowUp size={13} aria-hidden />
+          </Link>
         </div>
       </div>
     </footer>

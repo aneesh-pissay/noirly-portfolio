@@ -30,3 +30,11 @@ console.log('Copying static assets to standalone build...');
 copyRecursive('.next/static', '.next/standalone/.next/static');
 copyRecursive('public', '.next/standalone/public');
 console.log('✓ Static assets copied successfully');
+
+// server.js chdirs into .next/standalone, so runtime env files must live there.
+for (const envFile of ['.env', '.env.production', '.env.local', '.env.production.local']) {
+  if (fs.existsSync(envFile)) {
+    fs.copyFileSync(envFile, path.join('.next/standalone', envFile));
+    console.log(`✓ Copied ${envFile} to standalone build`);
+  }
+}

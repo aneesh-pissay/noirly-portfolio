@@ -17,7 +17,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { SectionHeading } from "@/components/sections/SectionHeading";
-import { Reveal, StaggerGroup, RevealItem, SpotlightCard, fadeUp, VIEWPORT, DURATION, EASE_OUT } from "@noirly-dev/ui/motion";
+import { Reveal, StaggerGroup, RevealItem, SpotlightCard, fadeUp, VIEWPORT, EASE_OUT } from "@noirly-dev/ui/motion";
 import { profile as defaultProfile } from "@/data/profile";
 import type { Profile } from "@/data/profile";
 import { archLayers, type ArchIconKey, type ArchLayer } from "@/data/architecture";
@@ -95,13 +95,13 @@ function ArchLayerCard({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 18, scale: 0.98 }}
-      whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      initial={{ opacity: 0, y: 12 }}
+      whileInView={{ opacity: 1, y: 0 }}
       viewport={VIEWPORT}
       transition={{
-        duration: DURATION.slow,
+        duration: 0.4,
         ease: EASE_OUT,
-        delay: index * 0.09,
+        delay: index * 0.06,
       }}
     >
       <SpotlightCard animateIn={false} className="relative rounded-[var(--r-md)] p-4">
@@ -113,15 +113,6 @@ function ArchLayerCard({
 
       <div className="relative mb-3 flex items-center gap-3">
         <motion.span
-          initial={{ scale: 0.6, rotate: -10, opacity: 0 }}
-          whileInView={{ scale: 1, rotate: 0, opacity: 1 }}
-          viewport={VIEWPORT}
-          transition={{
-            delay: index * 0.09 + 0.12,
-            type: "spring",
-            stiffness: 420,
-            damping: 24,
-          }}
           style={{ scale: iconScale }}
           className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--r-sm)] border border-[var(--hairline)] bg-[color-mix(in_srgb,var(--text)_4%,transparent)] text-[var(--text-secondary)]"
         >
@@ -131,22 +122,10 @@ function ArchLayerCard({
       </div>
 
       <ul className="relative flex flex-wrap gap-2">
-        {layer.tech.map((tech, chipIndex) => (
-          <motion.li
-            key={tech}
-            initial={{ opacity: 0, y: 8, scale: 0.94 }}
-            whileInView={{ opacity: 1, y: 0, scale: 1 }}
-            viewport={VIEWPORT}
-            transition={{
-              delay: index * 0.09 + chipIndex * 0.05 + 0.2,
-              duration: DURATION.base,
-              ease: EASE_OUT,
-            }}
-            whileHover={{ y: -2, scale: 1.04 }}
-            className="chip"
-          >
+        {layer.tech.map((tech) => (
+          <li key={tech} className="chip">
             {tech}
-          </motion.li>
+          </li>
         ))}
       </ul>
       </SpotlightCard>

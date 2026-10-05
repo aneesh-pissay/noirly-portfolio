@@ -2,7 +2,8 @@
 
 import { ArrowUpRight, Github, Linkedin, Mail, type LucideIcon } from "lucide-react";
 import { SectionHeading } from "@/components/sections/SectionHeading";
-import { StaggerGroup, RevealItem, SpotlightCard, Magnetic, fadeUp } from "@noirly-dev/ui/motion";
+import { ContactForm } from "@/components/contact/ContactForm";
+import { StaggerGroup, RevealItem, SpotlightCard, fadeUp } from "@noirly-dev/ui/motion";
 import { profile as defaultProfile } from "@/data/profile";
 import type { Profile } from "@/data/profile";
 
@@ -59,21 +60,22 @@ export function Contact({ profile = defaultProfile }: { profile?: Profile }) {
           className="mx-auto max-w-2xl"
         />
 
-        <StaggerGroup gap={0.09} delay={0.1} className="mt-8 flex justify-center">
+        {/* The form is the primary path: it works for every visitor, unlike a
+            mailto: link, which does nothing without a configured mail app. */}
+        <StaggerGroup gap={0.09} delay={0.1} className="mx-auto mt-10 max-w-3xl">
           <RevealItem variants={fadeUp}>
-            <Magnetic>
-              <a href={profile.contact.email.href} className="btn btn-solid">
-                Start a conversation
-                <ArrowUpRight size={14} aria-hidden />
-              </a>
-            </Magnetic>
+            <SpotlightCard animateIn={false} lift={false}>
+              <ContactForm email={profile.contact.email} />
+            </SpotlightCard>
           </RevealItem>
         </StaggerGroup>
+
+        <p className="mono-label mt-10 text-center">Or reach me directly</p>
 
         <StaggerGroup
           gap={0.09}
           as="ul"
-          className="mx-auto mt-10 grid max-w-4xl grid-cols-1 gap-4 sm:grid-cols-3"
+          className="mx-auto mt-5 grid max-w-4xl grid-cols-1 gap-4 sm:grid-cols-3"
         >
           {channels.map(({ key, label, value, href, Icon, external }) => (
             <RevealItem key={key} as="li" variants={fadeUp}>

@@ -10,7 +10,7 @@ import {
   mdiTestTube,
 } from "@mdi/js";
 import { resolveSkillIcon } from "@/lib/content/icons";
-import type { DynamicSkill } from "@/lib/content/server";
+import type { Skill } from "@/data/skills";
 
 const categoryIcons = {
   "Frontend & Languages": mdiMonitorDashboard,
@@ -19,7 +19,7 @@ const categoryIcons = {
   "Testing & QA": mdiTestTube,
 } as const;
 
-export function SkillsView({ skills }: { skills: DynamicSkill[] }) {
+export function SkillsView({ skills }: { skills: Skill[] }) {
   const categories = Array.from(new Set(skills.map((s) => s.category)));
 
   return (

@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 import { ArrowDown, ArrowUpRight, Check } from "lucide-react";
-import { TextReveal, Reveal, StaggerGroup, RevealItem, SpotlightCard, Counter, blurUp, fadeUp, DURATION, EASE_OUT } from "@noirly-dev/ui/motion";
+import { TextReveal, Reveal, StaggerGroup, RevealItem, SpotlightCard, Counter, fadeUp, DURATION, EASE_OUT } from "@noirly-dev/ui/motion";
 import { profile as defaultProfile } from "@/data/profile";
 import type { Profile } from "@/data/profile";
 import { useInstantEntrance } from "@noirly-dev/ui";
@@ -20,10 +20,12 @@ const Marquee = dynamic(
   () => import("@noirly-dev/ui/motion").then((m) => m.Marquee),
   {
     ssr: false,
+    // One invisible chip reserves the row's height, so the hero does not grow
+    // (and shift everything below it) when the marquee mounts.
     loading: () => (
-      <ul className="flex flex-wrap gap-2 px-5">
-        {/* Filled by parent once Marquee mounts — placeholder keeps height. */}
-      </ul>
+      <div aria-hidden className="flex">
+        <span className="chip invisible">&nbsp;</span>
+      </div>
     ),
   },
 );
@@ -106,13 +108,13 @@ export function Hero({ profile = defaultProfile }: { profile?: Profile }) {
 
             <StaggerGroup gap={0.07} delay={0.38} className="mt-8 flex flex-wrap gap-3">
               <RevealItem>
-                <Link href="/#work" className="btn btn-solid" data-cursor="link">
+                <Link href="/#work" className="btn btn-solid">
                   View work
                   <ArrowUpRight size={14} aria-hidden />
                 </Link>
               </RevealItem>
               <RevealItem>
-                <Link href="/#contact" className="btn btn-ghost" data-cursor="link">
+                <Link href="/#contact" className="btn btn-ghost">
                   {profile.secondaryCta}
                 </Link>
               </RevealItem>
@@ -120,7 +122,7 @@ export function Hero({ profile = defaultProfile }: { profile?: Profile }) {
           </div>
 
           {/* Capability panel */}
-          <Reveal variants={blurUp} delay={0.25} className="w-full">
+          <Reveal variants={fadeUp} delay={0.2} className="w-full">
             <SpotlightCard animateIn={false} lift={false} className="w-full">
               <div className="flex items-center justify-between border-b border-[var(--hairline)] px-5 py-3.5">
                 <span className="mono-label">core_stack</span>
@@ -190,7 +192,7 @@ export function Hero({ profile = defaultProfile }: { profile?: Profile }) {
         aria-hidden
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 1.1, duration: DURATION.slow, ease: EASE_OUT }}
+        transition={{ delay: 0.6, duration: DURATION.slow, ease: EASE_OUT }}
         className="pointer-events-none absolute inset-x-0 bottom-5 hidden lg:block"
       >
         <div className="shell">

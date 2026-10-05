@@ -7,15 +7,6 @@ const r2Host = process.env.R2_PUBLIC_URL
   ? new URL(process.env.R2_PUBLIC_URL).hostname
   : undefined;
 
-const contentApiHost = (() => {
-  try {
-    const url = process.env.SITE_CONTENT_API_URL;
-    return url ? new URL(url).hostname : undefined;
-  } catch {
-    return undefined;
-  }
-})();
-
 const polyfillStub = "./lib/modern-polyfill.js";
 
 const nextConfig: NextConfig = {
@@ -23,6 +14,17 @@ const nextConfig: NextConfig = {
   // there fails because Turbopack doesn't emit .next/next-server.js.nft.json.
   // Keep standalone for self-hosting (`npm start`).
   output: process.env.VERCEL ? undefined : "standalone",
+  // The old standalone pages were folded into the home page and /work. Keep
+  // their URLs working for anyone with a bookmark or an old search result.
+  // `/projects` is matched exactly so /projects/noirly-messenger/* still serves.
+  async redirects() {
+    return [
+      { source: "/projects", destination: "/work", permanent: true },
+      { source: "/about", destination: "/#about", permanent: true },
+      { source: "/skills", destination: "/#stack", permanent: true },
+      { source: "/contact", destination: "/#contact", permanent: true },
+    ];
+  },
   transpilePackages: ["@noirly-dev/ui"],
   experimental: {
     optimizePackageImports: ["lucide-react", "@mdi/js", "@mdi/react", "framer-motion"],
@@ -53,20 +55,6 @@ const nextConfig: NextConfig = {
       },
       { protocol: "http", hostname: "localhost", pathname: "/**" },
       { protocol: "http", hostname: "127.0.0.1", pathname: "/**" },
-      ...(contentApiHost
-        ? [
-            {
-              protocol: "http" as const,
-              hostname: contentApiHost,
-              pathname: "/**",
-            },
-            {
-              protocol: "https" as const,
-              hostname: contentApiHost,
-              pathname: "/**",
-            },
-          ]
-        : []),
       ...(r2Host
         ? [{ protocol: "https" as const, hostname: r2Host, pathname: "/**" }]
         : []),

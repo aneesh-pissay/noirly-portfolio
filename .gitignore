@@ -41,3 +41,12 @@ yarn-error.log*
 next-env.d.ts
 
 .ssh/
+# python
+__pycache__/
+*.pyc
+
+# playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

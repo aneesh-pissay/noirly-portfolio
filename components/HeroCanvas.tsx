@@ -28,7 +28,7 @@ import {
  *    moment the hero leaves the viewport.
  *
  * The render loop is Framer Motion's frame scheduler, not a private rAF, so the
- * canvas shares the one loop that Lenis and every motion value already run on.
+ * canvas shares the one loop every motion value already runs on.
  */
 
 const DESKTOP_GRID = { cols: 12, rows: 8 } as const;

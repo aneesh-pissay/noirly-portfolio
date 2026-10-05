@@ -34,8 +34,6 @@ export function isAllowedProjectLogoUrl(absoluteUrl: string, requestOrigin: stri
 
   for (const host of [
     hostFromEnvUrl(process.env.R2_PUBLIC_URL),
-    hostFromEnvUrl(process.env.PORTFOLIO_CONTENT_API_URL),
-    hostFromEnvUrl(process.env.SITE_CONTENT_API_URL),
     hostFromEnvUrl(requestOrigin),
   ]) {
     if (host) allowedHosts.add(host);

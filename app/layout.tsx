@@ -1,14 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
-import { NoirlyHead, noirlyFontClassName, SiteBackground, PageTransition } from "@noirly-dev/ui";
+import { NoirlyHead, noirlyFontClassName, SiteBackground } from "@noirly-dev/ui";
 import { Header } from "@/components/Header";
 import { DeferredFooter } from "@/components/DeferredFooter";
 import { MotionProvider } from "@noirly-dev/ui/motion";
 import { FaviconTheme } from "@/components/FaviconTheme";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { DeferredCursor } from "@/components/DeferredCursor";
 import { DeferredStyles } from "@/components/DeferredStyles";
-import { SmoothScroll } from "@noirly-dev/ui/scroll";
 import { getPortfolioContent } from "@/lib/content/server";
 import "./globals.css";
 
@@ -34,7 +32,10 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     metadataBase: new URL("https://www.aneesh-pissay.in"),
-    title,
+    // Child pages set a short title ("Work", "Noirly Flow — …") and inherit
+    // the site name from the template.
+    title: { default: title, template: "%s · Noirly Portfolio" },
+    alternates: { canonical: "/" },
     description: profile.description,
     icons: {
       icon: [
@@ -76,21 +77,13 @@ export async function generateMetadata(): Promise<Metadata> {
       description: profile.description,
       url: "https://www.aneesh-pissay.in",
       siteName: "Noirly Portfolio",
-      images: [
-        {
-          url: "/favicon-light-192.png",
-          width: 192,
-          height: 192,
-          alt: "Noirly Portfolio",
-        },
-      ],
+      // Share images come from the opengraph-image files next to each page.
       type: "website",
     },
     twitter: {
-      card: "summary",
+      card: "summary_large_image",
       title,
       description: profile.description,
-      images: ["/favicon-light-192.png"],
     },
     manifest: "/manifest.webmanifest",
   };
@@ -166,42 +159,25 @@ export default async function RootLayout({
         <a href="#main" className="skip-link">
           Skip to content
         </a>
-        {/*
-          <SmoothScroll> is outermost of the behavioural providers: it owns the
-          document scroller, and everything below reads scroll position from it
-          (directly, or through Framer Motion's useScroll). It renders no
-          element of its own, so it cannot affect layout.
-        */}
-        <SmoothScroll>
-          <SiteBackground />
-          {/*
-            Deferred via client dynamic import so the cursor hook stays out of
-            the critical JS. Renders null on coarse pointers; fixed positioning
-            means late mount does not shift layout.
-          */}
-          <DeferredCursor />
-          <DeferredStyles />
-          <FaviconTheme />
-          <ThemeProvider defaultThemeId={content.theme.id}>
-            <MotionProvider>
-              <Header title="Noirly Portfolio" navLinks={navLinks} profile={profile} />
-              {/*
-                Only {children} is wrapped: the header and footer persist across
-                routes, and the shutter is fixed, so it covers them regardless.
-                The landmark lives here rather than in app/template.tsx: Next
-                emits the template's client chunk as a <script> without the CSP
-                nonce, so the strict CSP in proxy.ts blocks it and hydration
-                never completes (every motion element stays at opacity:0).
-              */}
-              <PageTransition>
-                <main id="main" className="flex flex-1 flex-col">
-                  {children}
-                </main>
-              </PageTransition>
-              <DeferredFooter title="Noirly Portfolio" profile={profile} />
-            </MotionProvider>
-          </ThemeProvider>
-        </SmoothScroll>
+        <SiteBackground />
+        <DeferredStyles />
+        <FaviconTheme />
+        <ThemeProvider defaultThemeId={content.theme.id}>
+          <MotionProvider>
+            <Header title="Noirly Portfolio" navLinks={navLinks} profile={profile} />
+            {/*
+              No route shutter: pages swap instantly so navigation never waits
+              on an animation. The landmark lives here rather than in
+              app/template.tsx: Next emits the template's client chunk as a
+              <script> without the CSP nonce, so the strict CSP in proxy.ts
+              blocks it and hydration never completes.
+            */}
+            <main id="main" className="flex flex-1 flex-col">
+              {children}
+            </main>
+            <DeferredFooter title="Noirly Portfolio" profile={profile} />
+          </MotionProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -1,20 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { SectionHeading } from "@/components/sections/SectionHeading";
-import { Magnetic, SpotlightCard, TiltCard } from "@noirly-dev/ui/motion";
+import { motion } from "framer-motion";
+import { SpotlightCard, VIEWPORT, EASE_OUT } from "@noirly-dev/ui/motion";
 import {
   ProjectFeatureGraphic,
   ProjectLogo,
 } from "@/components/projects/ProjectFeatureGraphic";
 import { cn } from "@/lib/utils";
 import { profile as defaultProfile } from "@/data/profile";
-import { featuredProjects as defaultProjects, type FeaturedProject } from "@/data/projects";
+import { allProjects, featuredProjects as defaultProjects, type Project } from "@/data/projects";
 import type { Profile } from "@/data/profile";
 
 interface ProjectRowProps {
-  project: FeaturedProject;
+  project: Project;
   index: number;
 }
 
@@ -22,13 +23,19 @@ function ProjectRow({ project, index }: ProjectRowProps) {
   const flip = index % 2 === 1;
 
   return (
-    // <TiltCard> owns the perspective and the pointer maths; <SpotlightCard>
-    // keeps its own scroll entrance and cursor spotlight. Nesting them this way
-    // means the tilt transform and the reveal transform never share an element.
-    <TiltCard>
+    // A short, calm entrance: the card is readable almost as soon as it
+    // scrolls in. The hover is a small lift plus the pointer spotlight — no
+    // tilt or magnetic pull, so the card and its button stay still under the
+    // pointer and are easy to click.
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={VIEWPORT}
+      transition={{ duration: 0.45, ease: EASE_OUT }}
+    >
       <SpotlightCard
         as="article"
-        lift={false}
+        animateIn={false}
         className="group h-full"
       >
         <div
@@ -60,7 +67,14 @@ function ProjectRow({ project, index }: ProjectRowProps) {
                   <p className="mono-label">
                     {String(index + 1).padStart(2, "0")} — {project.type}
                   </p>
-                  <h3 className="display-md mt-1.5">{project.title}</h3>
+                  <h3 className="display-md mt-1.5">
+                    <Link
+                      href={`/work/${project.slug}`}
+                      className="transition-colors hover:text-[var(--accent)]"
+                    >
+                      {project.title}
+                    </Link>
+                  </h3>
                 </div>
               </div>
 
@@ -75,28 +89,25 @@ function ProjectRow({ project, index }: ProjectRowProps) {
               </ul>
             </div>
 
-            <div>
-              <Magnetic>
-                <Link
-                  href={project.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn btn-ghost"
-                  data-cursor="link"
-                >
-                  View live product
-                  <ArrowUpRight
-                    size={14}
-                    aria-hidden
-                    className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                  />
-                </Link>
-              </Magnetic>
+            <div className="flex flex-wrap gap-3">
+              <Link href={`/work/${project.slug}`} className="btn btn-solid">
+                Read case study
+                <ArrowRight size={14} aria-hidden />
+              </Link>
+              <a
+                href={project.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-ghost"
+              >
+                Live product
+                <ArrowUpRight size={14} aria-hidden />
+              </a>
             </div>
           </div>
         </div>
       </SpotlightCard>
-    </TiltCard>
+    </motion.div>
   );
 }
 
@@ -104,7 +115,7 @@ export function Work({
   projects = defaultProjects,
   profile = defaultProfile,
 }: {
-  projects?: FeaturedProject[];
+  projects?: Project[];
   profile?: Profile;
 }) {
   return (
@@ -120,8 +131,17 @@ export function Work({
 
         <div className="mt-10 space-y-5">
           {projects.map((project, i) => (
-            <ProjectRow key={project.title} project={project} index={i} />
+            <ProjectRow key={project.slug} project={project} index={i} />
           ))}
+        </div>
+
+        {/* The home page shows a selection; everything lives on /work, so
+            adding projects never makes this page longer. */}
+        <div className="mt-10 flex justify-center">
+          <Link href="/work" className="btn btn-ghost">
+            View all {allProjects.length} projects
+            <ArrowRight size={14} aria-hidden />
+          </Link>
         </div>
       </div>
     </section>
