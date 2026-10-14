@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" role="img" aria-label="Noirly AlgoLab mark">
+  <title>Noirly AlgoLab — monochrome</title>
+  <desc>A lab flask holding a small graph between code brackets.</desc>
+  <!-- Plain currentColor strokes only, so theming code can recolor it safely. -->
+  <style>svg { color: #C9A44A; }</style>
+  <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+    <path stroke-width="44" d="M380 214 H644"/>
+    <path stroke-width="44" d="M424 214 V404 L250 694 Q224 740 254 764 Q274 780 314 780 H710 Q750 780 770 764 Q800 740 774 694 L600 404 V214"/>
+    <path stroke-width="30" d="M366 620 L330 662 L366 704"/>
+    <path stroke-width="30" d="M658 620 L694 662 L658 704"/>
+    <path stroke-width="24" d="M434 676 L482 580 L542 676 L590 580"/>
+  </g>
+  <g fill="none" stroke="currentColor" stroke-width="22">
+    <circle cx="434" cy="676" r="22"/>
+    <circle cx="482" cy="580" r="22"/>
+    <circle cx="542" cy="676" r="22"/>
+    <circle cx="590" cy="580" r="22"/>
+  </g>
+</svg>

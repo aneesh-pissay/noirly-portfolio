@@ -73,4 +73,15 @@ export const projects: Project[] = [
     githubUrl: "#",
     category: "Web",
   },
+  {
+    title: "Noirly AlgoLab",
+    description:
+      "Learn data structures and algorithms by watching them run — step-by-step visualizations, code tracing, and server-graded quizzes.",
+    technologies: ["Next.js", "React", "TypeScript", "MongoDB", "Auth.js"],
+    logoUrl: "/projects/noirly-algolab.svg",
+    logoUrlDark: "/projects/noirly-algolab.svg",
+    url: "https://noirly.algolab.aneesh-pissay.in/",
+    githubUrl: "#",
+    category: "Web",
+  },
 ];

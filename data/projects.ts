@@ -170,6 +170,33 @@ const projects: Project[] = [
       ],
     },
   },
+  {
+    slug: "noirly-algolab",
+    title: "Noirly AlgoLab",
+    type: "Education",
+    category: "Web",
+    description:
+      "Learn data structures and algorithms by watching them run — step-by-step visualizations, code tracing, and server-graded quizzes.",
+    stack: ["Next.js", "React", "TypeScript", "MongoDB", "Auth.js"],
+    url: "https://noirly.algolab.aneesh-pissay.in/",
+    logo: "/projects/noirly-algolab.svg",
+    featured: false,
+    order: 6,
+    caseStudy: {
+      problem:
+        "Most people learn data structures and algorithms by memorizing solutions, then struggle when a problem looks slightly different.",
+      approach:
+        "AlgoLab teaches through visualization: every lesson runs the algorithm step by step while the matching line of code lights up, and learners can feed in their own input. Lessons are organised into a staged path across Data Structures, Algorithms, and Patterns, and quizzes are graded on the server, so progress reflects real understanding.",
+      highlights: [
+        "Step-by-step visualizers with synced code highlighting",
+        "Custom input for each lesson, validated before it runs",
+        "Staged learning path across Data Structures, Algorithms, and Patterns",
+        "Server-graded quizzes that gate lesson completion",
+        "Progress, streaks, and XP saved per learner",
+        "Single sign-on through Noirly Identity (OpenID Connect)",
+      ],
+    },
+  },
 ];
 
 /** All projects, in display order. */
